@@ -1,0 +1,8 @@
+# Ignore all generated files in output directory
+*.dot
+*.png
+*.svg
+*.pdf
+
+# But track the directory structure
+!.gitignore

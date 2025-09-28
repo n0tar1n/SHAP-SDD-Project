@@ -6,7 +6,7 @@ The **SHAP-SDD Project** implements **Algorithm 2** from the SDD research paper 
 
 
 ## Project Structure
-
+"""
 shap-sdd-project/
 ├── src/                          # Source code
 │   ├── main.py                   # Main entry point - complete pipeline
@@ -31,7 +31,7 @@ shap-sdd-project/
 ├── setup.sh                      # Automated setup script
 ├── .gitignore                    # Git ignore rules
 └── README.md
-
+"""
 
 ## Algorithm Implementation
 

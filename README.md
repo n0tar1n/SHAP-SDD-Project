@@ -6,7 +6,7 @@ The **SHAP-SDD Project** implements **Algorithm 2** from the SDD research paper 
 
 
 ## Project Structure
-"""
+
 shap-sdd-project/
 ├── src/                          # Source code
 │   ├── main.py                   # Main entry point - complete pipeline
@@ -31,7 +31,7 @@ shap-sdd-project/
 ├── setup.sh                      # Automated setup script
 ├── .gitignore                    # Git ignore rules
 └── README.md
-"""
+
 
 ## Algorithm Implementation
 
@@ -96,7 +96,6 @@ The project requires these key packages:
 
 ### Basic Usage
 
-bash
 # Activate virtual environment (if not already active)
 source venv/bin/activate
 
@@ -106,7 +105,6 @@ python src/main.py path/to/your/formula.cnf
 
 ### Example with Test Data
 
-bash
 # Create a test CNF file
 cat > test_formula.cnf << 'EOF'
 c Test formula: (A ∧ B) ∨ (C ∧ D)
@@ -161,8 +159,6 @@ print(f"SHAP scores: {shap_scores}")
 ## Testing
 
 ### Run All Tests
-
-bash
 # Activate environment
 source venv/bin/activate
 
@@ -189,7 +185,6 @@ The test suite includes:
 
 The pipeline automatically generates DOT files in the output directory:
 
-bash
 # Convert DOT to PNG (requires Graphviz)
 dot -Tpng output/sdd.dot -o output/sdd.png
 
@@ -215,14 +210,12 @@ Your CNF DIMACS files should:
 ### Common Issues
 
 1. **PySDD Installation Failed**:
-   bash
    # Try upgrading build tools
    pip install --upgrade setuptools wheel
    pip install pysdd
    
 
 2. **Import Errors**:
-   bash
    # Ensure virtual environment is activated
    source venv/bin/activate
    # Verify Python path
@@ -230,7 +223,6 @@ Your CNF DIMACS files should:
    
 
 3. **Test Failures**:
-   bash
    # Clear pytest cache
    python -m pytest --cache-clear
    # Run individual tests for debugging
@@ -240,7 +232,6 @@ Your CNF DIMACS files should:
 ### Debug Mode
 
 For detailed algorithm tracing:
-bash
 # Enable debug logging
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
 python -c "import logging; logging.basicConfig(level=logging.DEBUG)"

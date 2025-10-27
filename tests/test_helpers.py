@@ -102,22 +102,76 @@ p cnf 3 3
 
     def test_convert_to_sdd_format(self):
         """Test conversion of CNF clauses to SDD format"""
-        input_clauses = [
-            [1, -2, 3],
-            [-1, 2],
-            [1, 2, -3]
-        ]
+        input_clauses = [[1, -2, 3], [-1, 2], [1, 2, -3]]
         
-        # Currently, the function just returns the input as-is
-        # You may need to update this test when the actual conversion logic is implemented
         result = convert_to_sdd_format(input_clauses)
-        self.assertEqual(result, input_clauses)
+        expected = "p cnf 3 3\n1 -2 3 0\n-1 2 0\n1 2 -3 0\n"
+        self.assertEqual(result, expected)
 
     def test_convert_to_sdd_format_empty(self):
         """Test conversion of empty clauses list to SDD format"""
         empty_clauses = []
         result = convert_to_sdd_format(empty_clauses)
-        self.assertEqual(result, empty_clauses)
+        self.assertEqual(result, "p cnf 0 0\n")  
+
+    def test_validate_json_marginals_valid(self):
+        """Test validation of valid marginals"""
+        from utils.helpers import validate_json_marginals
+        
+        valid_marginals = {"x1": 0.2, "x2": 0.8, "x3": 0.5}
+        self.assertTrue(validate_json_marginals(valid_marginals))
+
+    def test_validate_json_marginals_invalid_probability(self):
+        """Test validation catches invalid probabilities"""
+        from utils.helpers import validate_json_marginals
+        
+        invalid_marginals = {"x1": 1.5, "x2": 0.5}
+        with self.assertRaises(ValueError) as cm:
+            validate_json_marginals(invalid_marginals)
+        self.assertIn("must be in [0,1]", str(cm.exception))
+
+    def test_validate_json_marginals_invalid_name(self):
+        """Test validation catches invalid variable names"""
+        from utils.helpers import validate_json_marginals
+        
+        invalid_marginals = {"y1": 0.5, "x2": 0.3}
+        with self.assertRaises(ValueError) as cm:
+            validate_json_marginals(invalid_marginals)
+        self.assertIn("must start with 'x'", str(cm.exception))
+
+    def test_validate_json_entity_valid(self):
+        """Test validation of valid entity"""
+        from utils.helpers import validate_json_entity
+        
+        valid_entity = {"x1": 1, "x2": 0, "x3": 1}
+        self.assertTrue(validate_json_entity(valid_entity))
+
+    def test_validate_json_entity_invalid_value(self):
+        """Test validation catches invalid entity values"""
+        from utils.helpers import validate_json_entity
+        
+        invalid_entity = {"x1": 2, "x2": 0}
+        with self.assertRaises(ValueError) as cm:
+            validate_json_entity(invalid_entity)
+        self.assertIn("must be 0 or 1", str(cm.exception))
+
+    def test_validate_json_compatibility_valid(self):
+        """Test compatibility validation with matching variables"""
+        from utils.helpers import validate_json_compatibility
+        
+        marginals = {"x1": 0.5, "x2": 0.7}
+        entity = {"x1": 1, "x2": 0}
+        self.assertTrue(validate_json_compatibility(marginals, entity))
+
+    def test_validate_json_compatibility_mismatch(self):
+        """Test compatibility validation catches mismatched variables"""
+        from utils.helpers import validate_json_compatibility
+        
+        marginals = {"x1": 0.5, "x2": 0.7, "x3": 0.3}
+        entity = {"x1": 1, "x2": 0}
+        with self.assertRaises(ValueError) as cm:
+            validate_json_compatibility(marginals, entity)
+        self.assertIn("Variable mismatch", str(cm.exception))
 
 if __name__ == "__main__":
     unittest.main()

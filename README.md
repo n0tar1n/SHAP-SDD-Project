@@ -53,6 +53,13 @@ shap-sdd-project/
    - Represents SDD structure with proper gate labeling
    - Essential for validating SDD construction correctness
 
+4. **JSON Input Support** (`src/utils/helpers.py`):
+   - Load and validate marginal probability distributions
+   - Load and validate entity value assignments
+   - Verify variable name consistency between inputs
+   - Comprehensive error messages for invalid inputs
+   - Helper function `load_and_validate_json()` for streamlined loading
+
 ## Setup Instructions
 
 ### Prerequisites
@@ -94,67 +101,85 @@ The project requires these key packages:
 
 ## Usage
 
-### Basic Usage
+### Basic Usage with JSON Files
 
-# Activate virtual environment (if not already active)
+#### Activate virtual environment (if not already active)
 source venv/bin/activate
 
-# Run with a CNF DIMACS file
-python src/main.py path/to/your/formula.cnf
+#### Run with a CNF file and JSON inputs
+python src/main.py path/to/formula.cnf \
+    --marginals path/to/product.json \
+    --entity path/to/entity.json
 
+### JSON Input Format
+
+#### Product Distribution (marginals) - product.json:
+
+{
+  "x1": 0.20,
+  "x2": 0.80,
+  "x3": 0.50,
+  "x4": 0.10
+}
+
+#### Input Instance (entity) - entity.json:
+
+{
+  "x1": 1,
+  "x2": 0,
+  "x3": 1,
+  "x4": 0
+}
 
 ### Example with Test Data
 
-# Create a test CNF file
-cat > test_formula.cnf << 'EOF'
-c Test formula: (A ∧ B) ∨ (C ∧ D)
-p cnf 4 4
-1 2 0
-3 4 0
--1 -2 3 4 0
--3 -4 1 2 0
-EOF
+#### Run with provided test files
+python src/main.py tests/data/test.cnf \
+    --marginals tests/data/product.json \
+    --entity tests/data/entity.json
 
-# Run the pipeline
-python src/main.py test_formula.cnf
+#### Expected Output
 
+✓ JSON validation passed
+CNF file: tests/data/test.cnf
+Marginals: {'x1': 0.2, 'x2': 0.8, 'x3': 0.5, 'x4': 0.1}
+Entity: {'x1': 1, 'x2': 0, 'x3': 1, 'x4': 0}
 
-### Expected Output
-
-DEBUG:root:CNF header: 4 variables, 4 clauses
-DEBUG:root:Creating right-linear vtree for 4 variables
-DEBUG:root:Computing SHAP for variable 1
-DEBUG:root:SHAP score for variable 1: -0.03125
-DEBUG:root:Computing SHAP for variable 2
-DEBUG:root:SHAP score for variable 2: -0.03125
-DEBUG:root:Computing SHAP for variable 3
-DEBUG:root:SHAP score for variable 3: -0.03125
-DEBUG:root:Computing SHAP for variable 4
-DEBUG:root:SHAP score for variable 4: -0.03125
-SHAP Scores: {SddNode(name=1,id=3): -0.03125, SddNode(name=2,id=5): -0.03125, SddNode(name=3,id=7): -0.03125, SddNode(name=4,id=9): -0.03125}
-SDD visualization saved to 'output/sdd.dot'.
+SHAP Scores:
+  x1: 0.213333
+  x2: 0.123333
+  x3: 0.156667
+  x4: 0.010667
 
 
-### Advanced Usage
+### Advanced Usage - Programmatic API
 
-For custom marginal probabilities and entity values:
+For programmatic use with custom marginal probabilities and entity values:
 
-python
-from src.shap.compute_shap import compute_shap_algorithm
+```python
+from src.shap.compute_shap import compute_shap_scores, compute_shap_algorithm
 from src.sdd.sdd_utils import load_cnf, construct_sdd
+from src.utils.helpers import load_and_validate_json
+
+# Method 1: High-level API with JSON files
+marginals, entity = load_and_validate_json(
+    "tests/data/product.json",
+    "tests/data/entity.json"
+)
 
 # Load and construct SDD
-cnf_formula = load_cnf("your_formula.cnf")
+cnf_formula = load_cnf("tests/data/test.cnf")
 sdd = construct_sdd(cnf_formula)
 
-# Define custom parameters
-p = {1: 0.6, 2: 0.7, 3: 0.4, 4: 0.8}  # Marginal probabilities
-e = {1: 1, 2: 0, 3: 1, 4: 1}           # Entity values
-
-# Compute SHAP scores with Algorithm 2
-shap_scores = compute_shap_algorithm2(sdd, p, e)
+# Compute SHAP scores (returns dict with variable names as keys)
+shap_scores = compute_shap_scores(sdd, marginals, entity)
 print(f"SHAP scores: {shap_scores}")
 
+# Method 2: Low-level API with variable IDs
+p = {1: 0.6, 2: 0.7, 3: 0.4, 4: 0.8}  # Marginal probabilities
+e = {1: 1, 2: 0, 3: 1, 4: 1}           # Entity values
+shap_scores_by_id = compute_shap_algorithm(sdd, p, e)
+print(f"SHAP scores by ID: {shap_scores_by_id}")
 
 ## Testing
 
@@ -166,8 +191,17 @@ source venv/bin/activate
 python -m pytest tests/ -v
 
 # Run specific test categories
-python -m pytest tests/test_compute_shap.py -v     # SHAP algorithm tests
-python -m pytest tests/test_sdd_utils.py -v       # SDD construction tests
+## SHAP algorithm tests (4 tests)
+python -m pytest tests/test_compute_shap.py -v
+
+## SDD construction tests (2 tests)
+python -m pytest tests/test_sdd_utils.py -v
+
+## JSON validation tests (9 tests)
+python -m pytest tests/test_helpers.py -v
+
+## Visualization tests (1 test)
+python -m pytest tests/test_sdd_visualiser.py -v
 
 
 ### Test Coverage

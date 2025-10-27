@@ -31,11 +31,13 @@ class TestComputeShap(unittest.TestCase):
         shap_scores = compute_shap_scores(formula)
         print(f"Computed SHAP scores: {shap_scores}")
 
-        # CORRECTED: Assert SHAP scores are computed correctly
+        self.assertIn("x1", shap_scores)
+        self.assertIn("x2", shap_scores)
+    
         # For (a & b) | (~a & ~b) with uniform probs, each variable contributes 0.125
-        self.assertAlmostEqual(shap_scores[a], 0.125, places=3)
-        self.assertAlmostEqual(shap_scores[b], 0.125, places=3)
-        
+        self.assertAlmostEqual(shap_scores["x1"], 0.125, places=3)
+        self.assertAlmostEqual(shap_scores["x2"], 0.125, places=3)
+
         # Verify total SHAP sums to f(e) - E[f]
         total_shap = sum(shap_scores.values())
         self.assertAlmostEqual(total_shap, 0.25, places=3)  # f(1,1) - E[f] = 1 - 0.5 = 0.5, but with interactions
@@ -66,14 +68,14 @@ class TestComputeShap(unittest.TestCase):
         formula = (a & b) | (c & d)
         
         # Test with specific marginal probabilities and entity values
-        from shap.compute_shap import compute_shap_algorithm2
+        from shap.compute_shap import compute_shap_algorithm
         
         p = {1: 0.6, 2: 0.7, 3: 0.4, 4: 0.8}  # marginal probabilities
         e = {1: 1, 2: 0, 3: 1, 4: 1}           # entity values
         
-        shap_scores = compute_shap_algorithm2(formula, p, e)
+        shap_scores = compute_shap_algorithm(formula, p, e)
         
-        print(f"Fixed Algorithm 2 SHAP scores: {shap_scores}")
+        print(f"Algorithm SHAP scores: {shap_scores}")
         
         # Verify properties
         self.assertEqual(len(shap_scores), 4)

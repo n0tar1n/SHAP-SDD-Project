@@ -125,60 +125,62 @@ def compute_shap_algorithm(sdd, p, e):
                         delta[g][0] = e[y]      # y under entity
                         
             elif g.is_decision():
-                # SDD decision node - represents disjunction of conjunctions
-                for ell in range(max_ell + 1):
-                    val_gamma = 0.0
-                    val_delta = 0.0
-                    
-                    # Each element (prime, sub) represents prime ∧ sub
-                    for prime, sub in g.elements():
-                        V_prime = var_of[prime] - {x}
-                        V_sub = var_of[sub] - {x}
-                        max_prime = len(V_prime)
-                        max_sub = len(V_sub)
-                        
-                        # Fixed combinatorial weighting logic
-                        # Compute overlaps carefully
-                        V_prime_only = V_prime - V_sub
-                        V_sub_only = V_sub - V_prime
-                        V_common = V_prime & V_sub
-                        
-                        count_prime_only = len(V_prime_only)
-                        count_sub_only = len(V_sub_only)
-                        count_common = len(V_common)
-                        
-                        # Clarified ℓ bounds in loops
-                        for ell_prime in range(0, min(ell, max_prime) + 1):
-                            ell_sub = ell - ell_prime
-                            if ell_sub > max_sub or ell_sub < 0:
+                # Parent vars excluding x
+                Vg = (var_of[g] - {x})
+                L = len(Vg)
+
+                # Init parent arrays
+                gamma[g] = [0.0] * (L + 1)
+                delta[g] = [0.0] * (L + 1)
+
+                # ---- Phase 1: AND (prime ∧ sub) ----
+                per_child = []  # (child_gamma, child_delta, child_vars)
+                for prime, sub in g.elements():
+                    Vp = (var_of[prime] - {x})
+                    Vs = (var_of[sub] - {x})
+                    Vc = Vp | Vs
+                    Lp, Ls = len(Vp), len(Vs)
+                    child_len = len(Vc)
+
+                    child_gamma = [0.0] * (child_len + 1)
+                    child_delta = [0.0] * (child_len + 1)
+
+                    # decomposable AND, NO combinatorial weights
+                    for ell_child in range(child_len + 1):
+                        lo = max(0, ell_child - Ls)
+                        hi = min(ell_child, Lp)
+                        gsum = 0.0
+                        dsum = 0.0
+                        for ell_p in range(lo, hi + 1):
+                            ell_s = ell_child - ell_p
+                            if 0 <= ell_s <= Ls:
+                                gsum += gamma[prime][ell_p] * gamma[sub][ell_s]
+                                dsum += delta[prime][ell_p] * delta[sub][ell_s]
+                        child_gamma[ell_child] = gsum
+                        child_delta[ell_child] = dsum
+
+                    per_child.append((child_gamma, child_delta, Vc))
+
+                # ---- Phase 2: OR over elements ----
+                for child_gamma, child_delta, Vc in per_child:
+                    missing = len(Vg - Vc)
+                    max_child = len(Vc)
+                    for ell_parent in range(L + 1):
+                        upper = min(ell_parent, max_child)
+                        acc_g = 0.0
+                        acc_d = 0.0
+                        for ell_child in range(upper + 1):
+                            # virtual smoothing binomial factor
+                            try:
+                                w = comb(missing, ell_parent - ell_child)
+                                acc_g += child_gamma[ell_child] * w
+                                acc_d += child_delta[ell_child] * w
+                            except (ValueError, OverflowError):
+                                # Handle edge cases in combinatorial computation
+                                logging.warning(f"Combinatorial computation failed for missing={missing}, ell_parent={ell_parent}, ell_child={ell_child}")
                                 continue
-                            
-                            # Ensure no negative values and correct counts
-                            # We need to distribute ell variables between prime and sub
-                            # considering their overlap
-                            
-                            # For AND gate (prime ∧ sub), we need both to be satisfied
-                            # The combinatorial weight accounts for how many ways we can
-                            # choose variables from the exclusive sets
-                            
-                            if (0 <= ell_sub <= count_sub_only and 
-                                0 <= ell_prime <= count_prime_only):
-                                
-                                try:
-                                    # Apply combinatorial weighting as per Algorithm 2
-                                    weight = comb(count_sub_only, ell_sub) * comb(count_prime_only, ell_prime)
-                                    
-                                    # AND gate computation for this element
-                                    val_gamma += weight * gamma[prime][ell_prime] * gamma[sub][ell_sub]
-                                    val_delta += weight * delta[prime][ell_prime] * delta[sub][ell_sub]
-                                    
-                                except (ValueError, OverflowError):
-                                    # Handle edge cases in combinatorial computation
-                                    logging.warning(f"Combinatorial computation failed for ell_prime={ell_prime}, ell_sub={ell_sub}")
-                                    continue
-                    
-                    gamma[g][ell] = val_gamma
-                    delta[g][ell] = val_delta
+                        gamma[g][ell_parent] += acc_g
+                        delta[g][ell_parent] += acc_d
             else:
                 raise NotImplementedError(f"Gate type not handled for node {g.id}")
         
@@ -205,9 +207,17 @@ def compute_shap_algorithm(sdd, p, e):
     
     return shap_scores
 
-def compute_shap_scores(sdd):
+def compute_shap_scores(sdd, marginals=None, entity=None):
     """
-    Wrapper function to maintain compatibility with existing tests
+    Compute SHAP scores for an SDD with given marginals and entity values.
+    
+    Args:
+        sdd: SddNode root of the compiled circuit
+        marginals: dict mapping variable names (e.g., "x1") to marginal probabilities
+        entity: dict mapping variable names (e.g., "x1") to entity values (0 or 1)
+    
+    Returns:
+        dict mapping variable names to SHAP scores
     """
     if sdd is None:
         raise ValueError("The SDD is None. Cannot compute SHAP scores.")
@@ -215,18 +225,36 @@ def compute_shap_scores(sdd):
     # Extract variables from SDD
     variables = list(sdd.manager.vars)
     
-    # Set uniform marginal probabilities and entity values for testing
-    p = {abs(var.literal): 0.5 for var in variables}  # Uniform marginals
-    e = {abs(var.literal): 1 for var in variables}    # All variables set to 1
+    # Build mapping from variable ID to variable name
+    var_id_to_name = {abs(var.literal): f"x{abs(var.literal)}" for var in variables}
     
-    # Call Algorithm 2 implementation
-    shap_scores = compute_shap_algorithm(sdd, p, e)
+    # If marginals or entity not provided, use defaults (backward compatibility)
+    if marginals is None:
+        logging.warning("No marginals provided, using uniform probabilities (0.5)")
+        marginals = {var_id_to_name[abs(var.literal)]: 0.5 for var in variables}
     
-    # Convert back to SDD variable objects for compatibility
-    result = {}
+    if entity is None:
+        logging.warning("No entity provided, using all variables set to 1")
+        entity = {var_id_to_name[abs(var.literal)]: 1 for var in variables}
+    
+    # Convert to IDs 
+    p = {}
+    e = {}
     for var in variables:
         var_id = abs(var.literal)
-        if var_id in shap_scores:
-            result[var] = shap_scores[var_id]
+        var_name = var_id_to_name[var_id]  # Use existing mapping
         
+        p[var_id] = marginals.get(var_name, 0.5)
+        e[var_id] = entity.get(var_name, 1)
+    
+    logging.debug(f"Computing SHAP with marginals: {marginals}")
+    logging.debug(f"Computing SHAP with entity: {entity}")
+    
+    # Call Algorithm 2 implementation
+    shap_scores_by_id = compute_shap_algorithm(sdd, p, e)
+    
+    # Convert back to variable names for output
+    result = {var_id_to_name[var_id]: score 
+              for var_id, score in shap_scores_by_id.items()}
+    
     return result

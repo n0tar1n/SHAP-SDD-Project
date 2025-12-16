@@ -22,6 +22,7 @@ The **SHAP-SDD Project** provides an implementation of Algorithm 2 from the SDD 
 
 ```
 shap-sdd-project/
+├── docs/
 ├── src/
 │   ├── main.py                 # Complete execution pipeline
 │   ├── shap/

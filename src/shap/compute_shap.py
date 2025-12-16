@@ -1,9 +1,9 @@
 from pysdd.sdd import WmcManager, SddNode
 from collections import defaultdict
 from math import factorial, comb
-import logging
+# import logging
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 def get_topological_order(sdd):
     """Returns gates in bottom-up order (leaves first)"""
@@ -83,7 +83,7 @@ def compute_shap_algorithm(sdd, p, e):
     n = len(X)
     
     for x in X:
-        logging.debug(f"Computing SHAP for variable {x}")
+        # logging.debug(f"Computing SHAP for variable {x}")
         
         # Initialize gamma and delta arrays for each gate
         gamma = {}
@@ -177,7 +177,8 @@ def compute_shap_algorithm(sdd, p, e):
                                 acc_d += child_delta[ell_child] * w
                             except (ValueError, OverflowError):
                                 # Handle edge cases in combinatorial computation
-                                logging.warning(f"Combinatorial computation failed for missing={missing}, ell_parent={ell_parent}, ell_child={ell_child}")
+                                
+                                # logging.warning(f"Combinatorial computation failed for missing={missing}, ell_parent={ell_parent}, ell_child={ell_child}")
                                 continue
                         gamma[g][ell_parent] += acc_g
                         delta[g][ell_parent] += acc_d
@@ -200,10 +201,10 @@ def compute_shap_algorithm(sdd, p, e):
             term = (e[x] - p[x]) * (gamma[gout][k] - delta[gout][k])
             shap_x += weight * term
             
-            logging.debug(f"Variable {x}, k={k}, weight={weight}, gamma={gamma[gout][k]}, delta={delta[gout][k]}, term={term}")
+            # logging.debug(f"Variable {x}, k={k}, weight={weight}, gamma={gamma[gout][k]}, delta={delta[gout][k]}, term={term}")
         
         shap_scores[x] = shap_x
-        logging.debug(f"SHAP score for variable {x}: {shap_x}")
+        # logging.debug(f"SHAP score for variable {x}: {shap_x}")
     
     return shap_scores
 
@@ -230,11 +231,11 @@ def compute_shap_scores(sdd, marginals=None, entity=None):
     
     # If marginals or entity not provided, use defaults (backward compatibility)
     if marginals is None:
-        logging.warning("No marginals provided, using uniform probabilities (0.5)")
+        # logging.warning("No marginals provided, using uniform probabilities (0.5)")
         marginals = {var_id_to_name[abs(var.literal)]: 0.5 for var in variables}
     
     if entity is None:
-        logging.warning("No entity provided, using all variables set to 1")
+        # logging.warning("No entity provided, using all variables set to 1")
         entity = {var_id_to_name[abs(var.literal)]: 1 for var in variables}
     
     # Convert to IDs 
@@ -247,8 +248,8 @@ def compute_shap_scores(sdd, marginals=None, entity=None):
         p[var_id] = marginals.get(var_name, 0.5)
         e[var_id] = entity.get(var_name, 1)
     
-    logging.debug(f"Computing SHAP with marginals: {marginals}")
-    logging.debug(f"Computing SHAP with entity: {entity}")
+    # logging.debug(f"Computing SHAP with marginals: {marginals}")
+    # logging.debug(f"Computing SHAP with entity: {entity}")
     
     # Call Algorithm 2 implementation
     shap_scores_by_id = compute_shap_algorithm(sdd, p, e)

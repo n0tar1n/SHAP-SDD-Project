@@ -1,0 +1,7 @@
+c Medium test case: (A ∨ B) ∧ (C ∨ D)
+c Tests independent clause interactions
+c Variables: 4
+c Clauses: 2
+p cnf 4 2
+1 2 0
+3 4 0

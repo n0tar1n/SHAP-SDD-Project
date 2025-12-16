@@ -1,0 +1,6 @@
+c Small test case: (A ∨ B)
+c Simple disjunction for baseline testing
+c Variables: 2
+c Clauses: 1
+p cnf 2 1
+1 2 0

@@ -1,8 +1,8 @@
 import os
 from pysdd.sdd import SddManager, Vtree, SddNode
-import logging
+# import logging
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 def load_cnf(cnf_file):
     """
@@ -19,7 +19,7 @@ def construct_sdd(cnf_formula):
         raise ValueError("construct_sdd expects a non-empty DIMACS CNF string")
 
     # Compile the CNF formula into an SDD
-    logging.debug("Compiling CNF to SDD...")
+    # logging.debug("Compiling CNF to SDD...")
     
     result = SddManager.from_cnf_string(cnf_formula, vtree_type=b"right")
 
@@ -32,5 +32,5 @@ def construct_sdd(cnf_formula):
     if not isinstance(sdd, SddNode):
         raise TypeError(f"Invalid SDD type: {type(sdd)}")
 
-    logging.debug("SDD construction complete.")
+    # logging.debug("SDD construction complete.")
     return sdd

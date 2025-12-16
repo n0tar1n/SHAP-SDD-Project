@@ -1,0 +1,13 @@
+c Large test case: Satisfiable 3-SAT problem
+c Tests scalability with realistic clause structure
+c Variables: 6
+c Clauses: 8
+p cnf 6 8
+1 2 3 0
+-1 2 4 0
+-2 3 5 0
+-3 4 6 0
+-4 5 -6 0
+1 -5 6 0
+2 -3 -4 0
+-1 -2 5 0

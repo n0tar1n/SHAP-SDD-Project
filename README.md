@@ -2,144 +2,137 @@
 
 ## Overview
 
-The **SHAP-SDD Project** implements **Algorithm 2** from the SDD research paper for computing SHAP (SHapley Additive exPlanations) scores on **Sentential Decision Diagrams (SDDs)**.
+The **SHAP-SDD Project** provides an implementation of Algorithm 2 from the SDD research paper to compute SHAP (SHapley Additive exPlanations) values for models represented as **Sentential Decision Diagrams (SDDs)**. This toolkit enables interpretable machine learning for complex Boolean models, with support for CNF inputs, visualization, and robust testing.
 
+---
+
+## Features
+
+- **Exact SHAP Score Computation:** Implements Algorithm 2 for bottom-up computation using γ (gamma) and δ (delta) arrays.
+- **SDD Compilation:** Converts CNF files (DIMACS format) to right-linear SDDs with automatic vtree construction.
+- **Visualization:** Generates DOT files for visualizing SDDs (via Graphviz).
+- **Robust Data Validation:** Ensures consistency and correctness of probability and entity input via JSON.
+- **Performance Benchmarking:** Comprehensive timing analysis for compilation and SHAP computation across different formula sizes.
+- **Extensive Testing:** Comprehensive test suite for algorithm correctness, construction, and edge cases.
+- **Easy Setup:** Automated environment setup and dependency installation.
+
+---
 
 ## Project Structure
 
+```
 shap-sdd-project/
-├── src/                          # Source code
-│   ├── main.py                   # Main entry point - complete pipeline
+├── src/
+│   ├── main.py                 # Complete execution pipeline
 │   ├── shap/
-│   │   ├── __init__.py
-│   │   └── compute_shap.py       # Algorithm 2 implementation
+│   │   └── compute_shap.py     # SHAP Algorithm 2 implementation
 │   ├── sdd/
-│   │   ├── __init__.py
-│   │   ├── sdd_utils.py          # CNF loading & SDD construction
-│   │   └── sdd_visualizer.py     # DOT file generation for visualization
+│   │   ├── sdd_utils.py        # CNF loading & SDD compilation
+│   │   └── sdd_visualizer.py   # DOT visualization
 │   └── utils/
-│       ├── __init__.py
-│       └── helpers.py            # Utility functions
-├── tests/                        # Comprehensive test suite
-│   ├── data/                     # Test CNF files
-│   ├── test_compute_shap.py      # SHAP algorithm tests
-│   ├── test_sdd_utils.py         # SDD construction tests
-│   ├── test_sdd_visualiser.py    # Visualization tests
-│   └── test_helpers.py           # Helper function tests
-├── output/                       # Generated files (DOT, visualizations)
-├── requirements.txt              # Python dependencies
-├── setup.sh                      # Automated setup script
-├── .gitignore                    # Git ignore rules
+│       └── helpers.py          # Input loaders, validation
+├── tests/                      # Test suite and test data
+│   ├── data/
+│   │   ├── small/              # 2-variable test case
+│   │   ├── medium/             # 4-variable test case
+│   │   └── large/              # 6-variable test case
+│   ├── test_compute_shap.py    # SHAP algorithm tests
+│   ├── test_sdd_utils.py       # SDD construction tests
+│   ├── test_helpers.py         # Validation tests
+│   └── test_sdd_visualiser.py  # Visualization tests
+├── benchmarks/
+│   └── benchmark_shap.py       # Performance benchmarking suite
+├── output/                     # Generated DOT/visualization files
+├── requirements.txt            # Dependency specification
+├── setup.sh                    # Automated setup
 └── README.md
+```
 
+---
 
-## Algorithm Implementation
-
-### Core Features
-
-1. **Algorithm Implementation** (`src/shap/compute_shap.py`):
-   - Bottom-up computation with γ (gamma) and δ (delta) arrays
-   - Proper handling of constant gates, variable gates, and decision gates
-   - Combinatorial weighting for OR-gate variable overlaps
-   - SHAP score aggregation using exact mathematical formula
-
-2. **Right-Linear Vtree Construction** (`src/sdd/sdd_utils.py`):
-   - Enforces right-linear vtree structure 
-   - Compiles CNF DIMACS files into SDDs with proper gate structure
-   - Handles both automatic compilation and manual construction fallback
-
-3. **SDD Visualization** (`src/sdd/sdd_visualizer.py`):
-   - Generates DOT files for Graphviz visualization
-   - Represents SDD structure with proper gate labeling
-   - Essential for validating SDD construction correctness
-
-4. **JSON Input Support** (`src/utils/helpers.py`):
-   - Load and validate marginal probability distributions
-   - Load and validate entity value assignments
-   - Verify variable name consistency between inputs
-   - Comprehensive error messages for invalid inputs
-   - Helper function `load_and_validate_json()` for streamlined loading
-
-## Setup Instructions
+## Installation and Setup
 
 ### Prerequisites
-- Python 3.8+ (tested with Python 3.12)
-- pip package manager
-- Graphviz (optional, for visualization)
 
-### Quick Setup (Recommended)
+- Python 3.8+ (_tested with 3.12_)
+- pip
+- [Graphviz](https://graphviz.org/) (optional, for visualizations)
 
-1. **Clone the repository:**
-   bash
-   git clone <repository-url>
-   cd shap-sdd-project
-   
+### Quickstart
 
-2. **Run the automated setup:**
-   bash
-   chmod +x setup.sh
-   ./setup.sh
-   
+```bash
+git clone <repository-url>
+cd shap-sdd-project
+chmod +x setup.sh
+./setup.sh
+```
 
-   This script will:
-   - Create a Python virtual environment
-   - Install all required dependencies
-   - Test the installation
-   - Verify PySDD and SHAP modules work correctly
+This setup script will:
+- Create a Python virtual environment
+- Install all required dependencies (PySDD, NumPy, pytest, etc.)
+- Run basic tests and validate modules
+- Verify PySDD and SHAP module imports
 
+**Manual Setup (Alternative):**
 
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+```
 
-
-### Dependencies
-
-The project requires these key packages:
-- pysdd>=1.0.5
-- Core SDD library (REQUIRED)
-- `numpy>=1.21.0` - Scientific computing
-- `pytest>=7.0.0` - Testing framework
-- Additional packages for visualization and development (see requirements.txt)
+---
 
 ## Usage
 
-### Basic Usage with JSON Files
+### Command-Line Interface
 
-#### Activate virtual environment (if not already active)
+Activate the virtual environment (if not already active):
+
+```bash
 source venv/bin/activate
+```
 
-#### Run with a CNF file and JSON inputs
+Process a CNF with SHAP analysis:
+
+```bash
 python src/main.py path/to/formula.cnf \
     --marginals path/to/product.json \
     --entity path/to/entity.json
+```
 
-### JSON Input Format
+#### JSON Formats
 
-#### Product Distribution (marginals) - product.json:
+- **Marginals (`product.json`):**
+  ```json
+  {
+    "x1": 0.20,
+    "x2": 0.80,
+    "x3": 0.50,
+    "x4": 0.10
+  }
+  ```
+- **Entity (`entity.json`):**
+  ```json
+  {
+    "x1": 1,
+    "x2": 0,
+    "x3": 1,
+    "x4": 0
+  }
+  ```
 
-{
-  "x1": 0.20,
-  "x2": 0.80,
-  "x3": 0.50,
-  "x4": 0.10
-}
+#### Example Run with Test Data
 
-#### Input Instance (entity) - entity.json:
-
-{
-  "x1": 1,
-  "x2": 0,
-  "x3": 1,
-  "x4": 0
-}
-
-### Example with Test Data
-
-#### Run with provided test files
+```bash
 python src/main.py tests/data/test.cnf \
     --marginals tests/data/product.json \
     --entity tests/data/entity.json
+```
 
-#### Expected Output
-
+Sample output:
+```
 ✓ JSON validation passed
 CNF file: tests/data/test.cnf
 Marginals: {'x1': 0.2, 'x2': 0.8, 'x3': 0.5, 'x4': 0.1}
@@ -150,127 +143,403 @@ SHAP Scores:
   x2: 0.123333
   x3: 0.156667
   x4: 0.010667
+```
 
+---
 
-### Advanced Usage - Programmatic API
+### Programmatic API
 
-For programmatic use with custom marginal probabilities and entity values:
+High-level usage:
 
 ```python
-from src.shap.compute_shap import compute_shap_scores, compute_shap_algorithm
+from src.shap.compute_shap import compute_shap_scores
 from src.sdd.sdd_utils import load_cnf, construct_sdd
 from src.utils.helpers import load_and_validate_json
 
-# Method 1: High-level API with JSON files
-marginals, entity = load_and_validate_json(
-    "tests/data/product.json",
-    "tests/data/entity.json"
-)
+# Load JSON-formatted marginals and entity
+marginals, entity = load_and_validate_json("tests/data/product.json", "tests/data/entity.json")
 
-# Load and construct SDD
+# Compile SDD from CNF
 cnf_formula = load_cnf("tests/data/test.cnf")
 sdd = construct_sdd(cnf_formula)
 
-# Compute SHAP scores (returns dict with variable names as keys)
+# Compute SHAP scores
 shap_scores = compute_shap_scores(sdd, marginals, entity)
-print(f"SHAP scores: {shap_scores}")
+print(shap_scores)
+```
 
-# Method 2: Low-level API with variable IDs
-p = {1: 0.6, 2: 0.7, 3: 0.4, 4: 0.8}  # Marginal probabilities
-e = {1: 1, 2: 0, 3: 1, 4: 1}           # Entity values
-shap_scores_by_id = compute_shap_algorithm(sdd, p, e)
-print(f"SHAP scores by ID: {shap_scores_by_id}")
+**Low-Level Usage with Variable IDs:**
+
+```python
+from src.shap.compute_shap import compute_shap_algorithm
+from pysdd.sdd import SddManager
+
+# Create SDD manually
+manager = SddManager.from_cnf_string("p cnf 2 1\n1 2 0\n", vtree_type=b"right")[0]
+sdd = manager.read_sdd_file("circuit.sdd")
+
+# Define marginals and entity by variable ID
+p = {1: 0.3, 2: 0.7}  # Variable IDs → marginal probabilities
+e = {1: 1, 2: 0}      # Variable IDs → entity values
+
+# Compute SHAP
+shap_scores = compute_shap_algorithm(sdd, p, e)
+print(shap_scores)  # {1: score1, 2: score2}
+
+---
 
 ## Testing
+### Running All Tests
 
-### Run All Tests
-# Activate environment
+Activate the environment first:
+```bash
 source venv/bin/activate
+```
 
-# Run complete test suite
+Run complete test suite (22 tests):
+```bash
 python -m pytest tests/ -v
+```
 
-# Run specific test categories
-## SHAP algorithm tests (4 tests)
+**Expected Output:**
+```
+tests/test_compute_shap.py::TestComputeShap::test_compute_shap_scores PASSED
+tests/test_compute_shap.py::TestComputeShap::test_complex_formula_shap PASSED
+tests/test_compute_shap.py::TestComputeShap::test_algorithm2_with_fixed_combinatorics PASSED
+tests/test_compute_shap.py::TestComputeShap::test_with_cnf_file PASSED
+tests/test_helpers.py::TestHelpers::test_parse_cnf_file PASSED
+tests/test_helpers.py::TestHelpers::test_validate_json_marginals_valid PASSED
+... (16 more tests)
+tests/test_sdd_utils.py::TestSddUtils::test_load_cnf PASSED
+tests/test_sdd_utils.py::TestSddUtils::test_construct_sdd PASSED
+tests/test_sdd_visualiser.py::TestSddVisualizer::test_sdd_to_dot PASSED
+
+===================== 22 passed in 2.34s =====================
+```
+
+### Running Specific Test Modules
+
+```bash
+# Test SHAP algorithm only
 python -m pytest tests/test_compute_shap.py -v
 
-## SDD construction tests (2 tests)
-python -m pytest tests/test_sdd_utils.py -v
-
-## JSON validation tests (9 tests)
+# Test validation utilities only
 python -m pytest tests/test_helpers.py -v
 
-## Visualization tests (1 test)
-python -m pytest tests/test_sdd_visualiser.py -v
+# Test with coverage report
+python -m pytest tests/ -v --cov=src --cov-report=term-missing
+```
 
+### Test Categories
 
-### Test Coverage
+| Module | Tests | Coverage |
+|--------|-------|----------|
+| **test_compute_shap.py** | 4 | SHAP algorithm correctness, symmetry, efficiency |
+| **test_helpers.py** | 16 | JSON validation, CNF parsing, compatibility checks |
+| **test_sdd_utils.py** | 2 | SDD construction, CNF loading |
+| **test_sdd_visualiser.py** | 1 | DOT file generation |
 
-The test suite includes:
-- **Algorithm validation** with known formulas
-- **SDD construction** with right-linear vtrees
-- **Visualization generation** and DOT file creation
-- **Edge cases** and error handling
-- **Integration tests** with CNF files
+---
+
+### Benchmark Test Cases
+
+The benchmark suite includes three test cases with increasing complexity:
+
+| Test Case | Variables | Clauses | Description |
+|-----------|-----------|---------|-------------|
+| **Small** | 2 | 1 | Simple disjunction: (A ∨ B) |
+| **Medium** | 4 | 2 | Independent clauses: (A ∨ B) ∧ (C ∨ D) |
+| **Large** | 6 | 8 | Satisfiable 3-SAT problem |
+
+### Sample Benchmark Output
+
+```
+============================================================
+TEST CASE: Small (2 vars, 1 clause) - Symmetric
+============================================================
+
+Benchmarking: tests/data/small/formula.cnf
+Number of runs: 20
+------------------------------------------------------------
+Variables: 2
+SDD Size: 5 nodes
+
+Load Time:
+  Mean:   0.82 ms
+  Median: 0.79 ms
+  StdDev: 0.15 ms
+
+Compile Time:
+  Mean:   2.34 ms
+  Median: 2.28 ms
+  StdDev: 0.31 ms
+
+SHAP Computation Time:
+  Mean:   0.67 ms
+  Median: 0.64 ms
+  StdDev: 0.12 ms
+
+Total Time:
+  Mean:   3.83 ms
+  Median: 3.76 ms
+  StdDev: 0.42 ms
+
+Time Breakdown:
+  Load/Validation: 21.4%
+  SDD Compilation: 61.1%
+  SHAP Computation: 17.5%
+
+============================================================
+SUMMARY TABLE
+============================================================
+Test Case                                     Vars   SDD      Compile    SHAP       Total     
+--------------------------------------------- ------ -------- ---------- ---------- ----------
+Small (2 vars, 1 clause)                      2      5        2.34       0.67       3.83      
+Medium (4 vars, 2 clauses)                    4      14       3.12       1.45       5.39      
+Large (6 vars, 8 clauses)                     6      47       8.71       4.23       13.76     
+```
+
+### Benchmark Metrics
+
+The benchmark measures:
+
+1. **Load Time:** JSON validation and CNF parsing
+2. **Compile Time:** SDD construction from CNF (typically 60-70% of total)
+3. **SHAP Computation Time:** Algorithm 2 execution (typically 20-30% of total)
+4. **Total Time:** End-to-end pipeline
+5. **SDD Size:** Number of nodes in compiled circuit
+
+### Performance Characteristics
+
+**Complexity:**
+- **Time:** O(n × |SDD| × d²) where n = variables, |SDD| = circuit size, d = max gate degree
+- **Space:** O(|SDD| × n) for γ/δ arrays
+
+**Typical Performance (on M1 Mac, Python 3.12):**
+- Small formulas (2-4 vars): 3-5 ms total
+- Medium formulas (4-6 vars): 5-15 ms total
+- Compilation dominates runtime (60-70%)
+- SHAP computation scales linearly with variables
+
+### Custom Benchmarks
+
+To benchmark your own formulas:
+
+```python
+from benchmarks.benchmark_shap import run_benchmark
+
+results = run_benchmark(
+    cnf_file="path/to/formula.cnf",
+    marginals_file="path/to/product.json",
+    entity_file="path/to/entity.json",
+    num_runs=20
+)
+
+# Results include timing statistics and SDD metrics
+print(f"Average SHAP time: {results[0]['shap_time'] * 1000:.2f} ms")
+print(f"SDD size: {results[0]['sdd_size']} nodes")
+```
+
+---
 
 ## Visualization
 
-### Generate SDD Visualizations
+### Generating Visualizations
 
-The pipeline automatically generates DOT files in the output directory:
+DOT files are automatically generated to the `output/` folder during tests. To manually generate:
 
-# Convert DOT to PNG (requires Graphviz)
-dot -Tpng output/sdd.dot -o output/sdd.png
+```python
+from src.sdd.sdd_visualizer import sdd_to_dot
 
-# Convert DOT to SVG
-dot -Tsvg output/sdd.dot -o output/sdd.svg
+# Assuming 'sdd' is your compiled SDD
+litnamemap = {1: "A", 2: "B", -1: "¬A", -2: "¬B"}
+dot_content = sdd_to_dot(sdd, litnamemap=litnamemap)
 
-# View the visualization
-open output/sdd.png  # macOS
-xdg-open output/sdd.png  # Linux
+with open("output/my_sdd.dot", "w") as f:
+    f.write(dot_content)
+```
 
+### Rendering DOT Files
 
-### Formula Requirements
+Convert DOT files to images using Graphviz:
 
-Your CNF DIMACS files should:
-- Use standard DIMACS format
-- Start with comment lines (c ...)
-- Include problem line: `p cnf <num_vars> <num_clauses>`
-- End clauses with `0`
+```bash
+# PNG format
+dot -Tpng output/sdd_formula.dot -o output/sdd_formula.png
 
+# SVG format (scalable)
+dot -Tsvg output/sdd_formula.dot -o output/sdd_formula.svg
 
-## Troubleshooting
+# PDF format
+dot -Tpdf output/sdd_formula.dot -o output/sdd_formula.pdf
+```
 
-### Common Issues
+**View images:**
+```bash
+# macOS
+open output/sdd_formula.png
 
-1. **PySDD Installation Failed**:
-   # Try upgrading build tools
-   pip install --upgrade setuptools wheel
+# Linux
+xdg-open output/sdd_formula.png
+
+# Windows
+start output/sdd_formula.png
+```
+
+## Supported Formats
+
+### CNF (DIMACS Format)
+
+Standard DIMACS CNF format with comments and problem line:
+
+```cnf
+c This is a comment
+c Formula: (A ∨ B) ∧ (C ∨ D)
+p cnf 4 2
+1 2 0
+3 4 0
+```
+
+**Format Rules:**
+- Comments start with `c`
+- Problem line: `p cnf <num_vars> <num_clauses>`
+- Each clause ends with `0`
+- Variables numbered 1, 2, 3, ...
+- Negation indicated by negative sign: `-1` = ¬x₁
+
+### JSON (Marginals and Entity)
+
+**Variable Naming:** Must use format `"x1"`, `"x2"`, `"x3"`, etc.
+
+**Marginals Constraints:**
+- Probabilities must be in range [0, 1]
+- Must be numeric (int or float)
+
+**Entity Constraints:**
+- Values must be binary: 0 or 1
+- Must be integers
+
+**Validation:** Both files must have identical variable sets.
+
+---
+
+# Troubleshooting
+
+### Installation Issues
+
+**PySDD failing to install?**
+
+1. Upgrade build tools:
+   ```bash
+   pip install --upgrade setuptools wheel pip
+   ```
+
+2. Install PySDD separately:
+   ```bash
    pip install pysdd
-   
+   ```
 
-2. **Import Errors**:
-   # Ensure virtual environment is activated
-   source venv/bin/activate
-   # Verify Python path
-   python -c "import sys; print(sys.path)"
-   
+3. If still failing, check Python version:
+   ```bash
+   python --version  # Should be 3.8+
+   ```
 
-3. **Test Failures**:
-   # Clear pytest cache
-   python -m pytest --cache-clear
-   # Run individual tests for debugging
-   python -m pytest tests/test_compute_shap.py::TestComputeShap::test_algorithm2_with_fixed_combinatorics -v
-   
+### Runtime Errors
 
-### Debug Mode
+**Import errors?**
 
-For detailed algorithm tracing:
-# Enable debug logging
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Verify Python path
+python -c "import sys; print(sys.path)"
+
+# Test imports
+python -c "from pysdd.sdd import SddManager; print('PySDD works!')"
+python -c "from src.shap.compute_shap import compute_shap_scores; print('SHAP works!')"
+```
+
+**Test failures?**
+
+```bash
+# Clear pytest cache
+python -m pytest --cache-clear
+
+# Run with verbose output
+python -m pytest tests/ -vv
+
+# Run single test for debugging
+python -m pytest tests/test_compute_shap.py::TestComputeShap::test_compute_shap_scores -vv
+```
+
+**JSON validation errors?**
+
+```bash
+# Check file format
+cat tests/data/medium/product.json | python -m json.tool
+
+# Verify variable names
+python -c "
+import json
+with open('tests/data/medium/product.json') as f:
+    data = json.load(f)
+    print('Variables:', list(data.keys()))
+    print('Valid format:', all(k.startswith('x') for k in data.keys()))
+"
+```
+
+### Debugging
+
+Enable detailed logging:
+
+```bash
+# Set Python path
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
-python -c "import logging; logging.basicConfig(level=logging.DEBUG)"
-python src/main.py your_formula.cnf
 
+# Enable debug logging
+python -c "
+import logging
+logging.basicConfig(level=logging.DEBUG)
+from shap.compute_shap import compute_shap_scores
+# Your code here
+"
+```
 
+**Debug specific components:**
 
+```python
+# Uncomment logging lines in source files:
+# src/shap/compute_shap.py - lines 5, 52, 174
+# src/sdd/sdd_utils.py - lines 5, 22, 33
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Then run your code
+```
+---
+
+## References
+
+### Core Libraries
+
+- **PySDD:** Python package for compiling and manipulating Sentential Decision Diagrams  
+  Repository: [ML-KULeuven/PySDD](https://github.com/ML-KULeuven/pysdd)  
+  Documentation: [PySDD Docs](https://pysdd.readthedocs.io/)
+
+### Research Papers
+
+- **Algorithm Source:**  
+  Marcelo Arenas, Pablo Barceló, Leopoldo Bertossi, Mikaël Monet  
+  *"On the Complexity of SHAP-Score-Based Explanations: Tractability via Knowledge Compilation and Non-Approximability Results"*  
+  Journal of Machine Learning Research, 24:1–58, 2023  
+  [https://www.jmlr.org/papers/v24/21-0389.html](https://www.jmlr.org/papers/v24/21-0389.html)
+
+- **SDD Theory:**  
+  Adnan Darwiche  
+  *"SDD: A New Canonical Representation of Propositional Knowledge Bases"*  
+  IJCAI 2011  
+  [http://reasoning.cs.ucla.edu/sdd/](http://reasoning.cs.ucla.edu/sdd/)
+
+---

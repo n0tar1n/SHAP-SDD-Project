@@ -1,3 +1,3 @@
-## Bayesian Network encoded in CNF form
+## Bayesian Networks encoded in CNF form
 
-### Downloaded from [CRIL](https://www.cril.fr/KC/benchmarks.html)
+### Download from [CRIL](https://www.cril.fr/KC/benchmarks.html)

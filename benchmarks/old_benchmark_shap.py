@@ -114,7 +114,7 @@ def run_benchmark(cnf_file, marginals_file, entity_file, num_runs=10):
     
     return results
 
-
+"""
 if __name__ == "__main__":
     # Benchmark different formula sizes
     test_cases = [
@@ -169,3 +169,4 @@ if __name__ == "__main__":
         
         print(f"{test_case['name']:<45} {num_vars:<6} {sdd_size:<8} "
               f"{avg_compile:<10.2f} {avg_shap:<10.2f} {avg_total:<10.2f}")
+"""

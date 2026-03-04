@@ -1,0 +1,18 @@
+
+Will benchmark 1 Ace CNFs
+
+
+Outputs will be saved to:
+  results/ace/blockmap_05_01.net/20260304_225443
+
+
+======================================================================
+TEST CASE: Ace/blockmap_05_01.net (vars=1411, clauses=2737)
+======================================================================
+
+Benchmarking: Ace/blockmap_05_01.net (vars=1411, clauses=2737)
+CNF: benchmarks/BayesianNetwork/Ace/blockmap_05_01.net.cnf
+Runs: 5 (+1 warmup)
+cache_inputs=True, cache_sdd=False
+----------------------------------------------------------------------
+Read CNF: vars=1411 clauses=2737

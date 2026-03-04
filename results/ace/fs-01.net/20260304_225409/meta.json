@@ -1,0 +1,27 @@
+{
+  "created_at": "2026-03-04T22:54:09",
+  "ace_dir": "benchmarks/BayesianNetwork/Ace",
+  "inputs_root": "benchmarks/BayesianNetwork/Ace/inputs",
+  "output_dir": "results/ace/fs-01.net/20260304_225409",
+  "settings": {
+    "MAX_VARS": 6000,
+    "MAX_MB": 1.0,
+    "NUM_RUNS": 5,
+    "WARMUP": 1,
+    "CACHE_INPUTS": true,
+    "CACHE_SDD": false,
+    "VERBOSE": true
+  },
+  "ran": [
+    {
+      "name": "Ace/fs-01.net (vars=32, clauses=38)",
+      "cnf": "benchmarks/BayesianNetwork/Ace/fs-01.net.cnf",
+      "marginals": "benchmarks/BayesianNetwork/Ace/inputs/fs-01.net/product.json",
+      "entity": "benchmarks/BayesianNetwork/Ace/inputs/fs-01.net/entity.json",
+      "nvars": 32,
+      "nclauses": 38,
+      "size_mb": 0.0003185272216796875
+    }
+  ],
+  "skipped": []
+}
